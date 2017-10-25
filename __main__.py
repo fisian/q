@@ -1,6 +1,8 @@
 # All credits are belong to Squishy
 
 import re
+import types
+import operator
 
 debug = False
 
@@ -14,7 +16,13 @@ class MachineState:
         # current internal state/next expected value
         self.state = self.states["type"]
         # action resolving
-        self.actions = {"q": self.printNextStack}
+        self.actions = {
+                # String functions
+                "q": {"q": self.printNextStack},
+                # Number functions
+                "qq": {"q": self.addNumbers}}
+        # current action namespace resolution
+        self.action = self.actions
         # type resolving
         self.types = {"eval": "q",
                       "+Number": "qq",
@@ -22,21 +30,26 @@ class MachineState:
                       "lChar": "qqqq",
                       "uChar": "qqqqq",
                       "sChar": "qqqqqq"}
-        self.sChars = "  !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
+        self.sChars = "  !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~\n"
         self.currentType = self.types["eval"]
 
     # evaluate the current token in respect to state and action stack
     def eval(self, token):
         if self.state is self.states["action"]:
-            # if action can be resolved do setup and change to parameter mode
-            if token in self.actions:
-                self.actions[token]()
+            self.state = self.states["action"]
+            if type(self.action) is dict:
+                if token in self.action:
+                    self.action = self.action[token]
+                else:
+                    self.state = self.states["type"]
+                    print("ACTION ERROR: Action could not be resolved!")
+            if type(self.action) is types.MethodType:
+                self.action()
+                self.action = self.actions
+                self.state = self.states["type"]
                 if debug:
                     print("EXECUTING: " + str(self.actions[token]))
-            else:
-                print("ACTION ERROR: " + str(token))
 
-            self.state = self.states["type"]
 
         elif self.state is self.states["type"]:
             if token is self.types["eval"]:
@@ -93,7 +106,23 @@ class MachineState:
 
     # prints the topmost element from stack
     def printNextStack(self):
-        print(self.popStack())
+        print(self.popStack(), end="")
+
+    # adds the two topmost elemenst from stack
+    def addNumbers(self):
+        num1 = self.stack.pop()
+        num2 = self.stack.pop()
+        if (num1[0] == self.types["+Number"] or num1[0] == self.types["-Number"]) and (num2[0] == self.types["+Number"] or num2[0] == self.types["-Number"]):
+            result = self.resolveParam(num1)+self.resolveParam(num2)
+            if result > 0:
+                resultParam = "q" * (result + 1)
+                resultType = self.types["+Number"]
+            else:
+                resultParam = "q" * (1-result)
+                resultType = self.types["-Number"]
+            self.stack.append((resultType,resultParam))
+        else:
+            print("ACTION ERROR: addNumbers needs arguments of type ((+Number,-Number),(+Number,-Number))")
 
 # value delimiter
 #  'q'    '\t'
@@ -109,17 +138,20 @@ class MachineState:
 # qqqqq
 # ABCDEFGHIJKLMNOPQRSTUVWXYZ
 # qqqqqq
-#  !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
+#  !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~\n
 
 # Hello
 # ' '
 # World!
 # \print(12)
-code = ("sChar ! qqqqqq qq "
-        "lChars dlro qqqq qqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqqqqqqqq qqqq qqqqqqqqqqqqqqq uChar W qqqqq qqqqqqqqqqqqqqqqqqqqqqq "
+code = ("sChar \n qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq "
+        "qqq qqqq qq qqq qqqqqq qqqqqqqqqqqqqqqqqqqq qq qqq qqqqqq qqqqqqqqqqqq qqq qqqq "
+        "sChar \n qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq "
+        "sChar ! qqqqqq qq "
+        "lChars d l r o qqqq qqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqqqqqqqq qqqq qqqqqqqqqqqqqqq uChar W qqqqq qqqqqqqqqqqqqqqqqqqqqqq "
         "sChar <SPACE> qqqqqq q "
         "lChars olle qqqq qqqqqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqq uChar H qqqqq qqqqqqqq "
-        "q q q q q q q q q q q q q q q q q q q q q q q q")
+        "print q q q print q q q ... q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q add q qq q print q q q q q q")
 
 # Remove comments (anything besides 'q' and whitespace)
 code = re.sub(r'[^q\s]', '', code)
@@ -128,3 +160,4 @@ machine = MachineState()
 
 for token in program:
     machine.eval(token)
+
