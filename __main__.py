@@ -1,5 +1,7 @@
 # All credits are belong to Squishy
 
+import re
+
 debug = False
 
 
@@ -7,26 +9,19 @@ class MachineState:
     def __init__(self):
         # stack to store operators
         self.stack = []
-        # next action to allow one pass execution, parameters are pushed to temp
-        #            method             temp storage
-        # eg: (self.printNextStack, ["param1", 12, 15])
-        # new actions should initialize themselves with:
-        #     (`method`, [])
-        self.nextActions = []
         # set of possible interpreter states
         self.states = {"action": 0, "type": 1, "value": 2}
         # current internal state/next expected value
-        self.state = self.states["action"]
+        self.state = self.states["type"]
         # action resolving
-        self.actions = {"q": self.push,
-                        "qq": self.printNextStack}
+        self.actions = {"q": self.printNextStack}
         # type resolving
-        self.types = {"+Number": "q",
-                      "-Number": "qq",
-                      "lChar": "qqq",
-                      "uChar": "qqqq",
-                      "sChar": "qqqqq",
-                      "eval": "qqqqqqqqqq"}
+        self.types = {"eval": "q",
+                      "+Number": "qq",
+                      "-Number": "qqq",
+                      "lChar": "qqqq",
+                      "uChar": "qqqqq",
+                      "sChar": "qqqqqq"}
         self.sChars = "  !\"#$%&'()*+,-./:;<=>?@[\]^_`{|}~"
         self.currentType = self.types["eval"]
 
@@ -35,15 +30,17 @@ class MachineState:
         if self.state is self.states["action"]:
             # if action can be resolved do setup and change to parameter mode
             if token in self.actions:
-                self.actions[token](init=True)
+                self.actions[token]()
                 if debug:
                     print("EXECUTING: " + str(self.actions[token]))
             else:
                 print("ACTION ERROR: " + str(token))
 
+            self.state = self.states["type"]
+
         elif self.state is self.states["type"]:
             if token is self.types["eval"]:
-                self.state = self.actions["action"]
+                self.state = self.states["action"]
             else:
                 if token in self.types.values():
                     self.currentType = token
@@ -55,82 +52,77 @@ class MachineState:
                 self.state = self.states["value"]
 
         elif self.state is self.states["value"]:
-            if self.currentType == self.types["+Number"]:
-                self.pushParam(len(token))
-            elif self.currentType == self.types["-Number"]:
-                self.pushParam(-len(token))
-            elif self.currentType == self.types["lChar"]:
-                self.pushParam(chr(97 + (len(token) - 1) % 26))
-            elif self.currentType == self.types["uChar"]:
-                self.pushParam(chr(65 + (len(token) - 1) % 26))
-            elif self.currentType == self.types["sChar"]:
-                self.pushParam(self.sChars[len(token) % len(self.sChars)])
-            else:
-                print("INTERNAL ACTION ERROR: " + str(self.currentType) + " : " + str(list(self.types.keys())[list(self.types.values()).index(self.currentType)]))
-
+            self.stack.append((self.currentType, token))
             if debug:
-                print(self.currentAction())
-            self.currentAction()()
+                print("PARAM: " + str(token))
+
+            self.state = self.states["type"]
 
         else:
             print("INTERNAL STATE ERROR: " + str(self.state))
 
-    # helper method for eval
-    def pushParam(self, param):
-        self.nextActions[-1][1].append(param)
+    # helper method for type resolution
+    def resolveParam(self, paramTuple):
+        paramType = paramTuple[0]
+        param = paramTuple[1]
+        resolvedParam = None
+        if paramType == self.types["+Number"]:
+            resolvedParam = len(param)-1
+        elif paramType == self.types["-Number"]:
+            resolvedParam = 1-len(param)
+        elif paramType == self.types["lChar"]:
+            resolvedParam = chr(97 + (len(param) - 1) % 26)
+        elif paramType == self.types["uChar"]:
+            resolvedParam = chr(65 + (len(param) - 1) % 26)
+        elif paramType == self.types["sChar"]:
+            resolvedParam = self.sChars[len(param) % len(self.sChars)]
+        else:
+            print("INTERNAL ACTION ERROR: " + str(paramType) + " : " + str(list(self.types.keys())[list(self.types.values()).index(paramType)]))
+
         if debug:
-            print("PUSHED PARAM: " + str(param))
+            print("RESOLVED PARAM: " + str(resolvedParam))
 
-    # helper method to get currently evaluating method
-    def currentAction(self):
-        return self.nextActions[-1][0]
+        return resolvedParam
 
-    # helper method to get currently evaluating parameters
-    def currentParameters(self):
-        return self.nextActions[-1][1]
+    # helper method for getting the topmost stack item
+    def popStack(self):
+        if len(self.stack) > 0:
+            return self.resolveParam(self.stack.pop())
+        else:
+            print("PARAMETER ERROR: No parameters on stack!")
 
     # prints the topmost element from stack
-    def printNextStack(self, init=False):
-        print(self.stack.pop())
-
-    # put value onto stack
-    # is always prepended by preparePush
-    def push(self, init=False):
-        if init is True:
-            self.nextActions.append((self.push, []))
-            self.state = self.states["type"]
-        else:
-            self.stack.append(self.currentParameters()[0])
-            self.nextActions.pop()
-            self.state = self.states["action"]
-
+    def printNextStack(self):
+        print(self.popStack())
 
 # value delimiter
 #  'q'    '\t'
 
 # q
-# +0123456789...
-# qq
-# -0123456789...
-# qqq
-# abcdefghijklmnopqrstuvwxyz
-# qqqq
-# ABCDEFGHIJKLMNOPQRSTUVWXYZ
-# qqqqq
-#  !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
-# qqqqqqqqqq
 # `eval`
+# qq
+# +0123456789...
+# qqq
+# -0123456789...
+# qqqq
+# abcdefghijklmnopqrstuvwxyz
+# qqqqq
+# ABCDEFGHIJKLMNOPQRSTUVWXYZ
+# qqqqqq
+#  !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~
 
-# hello
+# Hello
 # ' '
-# world!
+# World!
 # \print(12)
-code = (" q qqqqq qq"
-        " q qqq qqqq q qqq qqqqqqqqqqqq q qqq qqqqqqqqqqqqqqqqqq q qqq qqqqqqqqqqqqqqq q qqqq qqqqqqqqqqqqqqqqqqqqqqq"
-        " q qqqqq q"
-        " q qqq qqqqqqqqqqqqqqq q qqq qqqqqqqqqqqq q qqq qqqqqqqqqqqq q qqq qqqqq q qqqq qqqqqqqq"
-        " qq qq qq qq qq qq qq qq qq qq qq qq")
+code = ("sChar ! qqqqqq qq "
+        "lChars dlro qqqq qqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqqqqqqqq qqqq qqqqqqqqqqqqqqq uChar W qqqqq qqqqqqqqqqqqqqqqqqqqqqq "
+        "sChar <SPACE> qqqqqq q "
+        "lChars olle qqqq qqqqqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqq uChar H qqqqq qqqqqqqq "
+        "q q q q q q q q q q q q q q q q q q q q q q q q")
 
+# Remove comments (anything besides 'q' and whitespace)
+code = re.sub(r'[^q\s]', '', code)
 program = code.split()
 machine = MachineState()
 
