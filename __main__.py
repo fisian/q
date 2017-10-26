@@ -19,9 +19,9 @@ class MachineState:
         # action resolving
         self.actions = {
                 # String functions
-                "q": {"q": self.printNextStack},
+                "qq": {"q": self.printNextStack},
                 # Number functions
-                "qq": {"q": self.addNumbers}}
+                "qqq": {"q": self.addNumbers}}
         # current action namespace resolution
         self.action = self.actions
         # type resolving
@@ -124,22 +124,6 @@ class MachineState:
             self.stack.append((resultType,resultParam))
         else:
             print("ACTION ERROR: addNumbers needs arguments of type ((+Number,-Number),(+Number,-Number))")
-
-# value delimiter
-#  'q'    '\t'
-
-# q
-# `eval`
-# qq
-# +0123456789...
-# qqq
-# -0123456789...
-# qqqq
-# abcdefghijklmnopqrstuvwxyz
-# qqqqq
-# ABCDEFGHIJKLMNOPQRSTUVWXYZ
-# qqqqqq
-#  !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~\n
 
 code = str(sys.argv)
 # Remove comments (anything besides 'q' and whitespace)
