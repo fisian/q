@@ -1,0 +1,8 @@
+sChar \n qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+-Number -3 qqq qqqq +Number 2 qq qqq sChar = qqqqqq qqqqqqqqqqqqqqqqqqqq +Number 2 qq qqq sChar + qqqqqq qqqqqqqqqqqq -Number -3 qqq qqqq
+sChar \n qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
+sChar ! qqqqqq qq
+lChars d l r o qqqq qqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqqqqqqqq qqqq qqqqqqqqqqqqqqq uChar W qqqqq qqqqqqqqqqqqqqqqqqqqqqq
+sChar <SPACE> qqqqqq q
+lChars o l l e qqqq qqqqqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqq uChar H qqqqq qqqqqqqq
+print q q q print q q q ... q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q add q qq q print q q q q q q

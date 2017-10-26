@@ -3,6 +3,7 @@
 import re
 import types
 import operator
+import sys
 
 debug = False
 
@@ -140,24 +141,11 @@ class MachineState:
 # qqqqqq
 #  !"#$%&'()*+,-./:;<=>?@[\]^_`{|}~\n
 
-# Hello
-# ' '
-# World!
-# \print(12)
-code = ("sChar \n qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq "
-        "qqq qqqq qq qqq qqqqqq qqqqqqqqqqqqqqqqqqqq qq qqq qqqqqq qqqqqqqqqqqq qqq qqqq "
-        "sChar \n qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq "
-        "sChar ! qqqqqq qq "
-        "lChars d l r o qqqq qqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqqqqqqqq qqqq qqqqqqqqqqqqqqq uChar W qqqqq qqqqqqqqqqqqqqqqqqqqqqq "
-        "sChar <SPACE> qqqqqq q "
-        "lChars olle qqqq qqqqqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqq uChar H qqqqq qqqqqqqq "
-        "print q q q print q q q ... q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q q add q qq q print q q q q q q")
-
+code = str(sys.argv)
 # Remove comments (anything besides 'q' and whitespace)
 code = re.sub(r'[^q\s]', '', code)
 program = code.split()
 machine = MachineState()
-
 for token in program:
     machine.eval(token)
 
