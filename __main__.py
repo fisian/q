@@ -125,11 +125,24 @@ class MachineState:
         else:
             print("ACTION ERROR: addNumbers needs arguments of type ((+Number,-Number),(+Number,-Number))")
 
-code = str(sys.argv)
-# Remove comments (anything besides 'q' and whitespace)
-code = re.sub(r'[^q\s]', '', code)
-program = code.split()
-machine = MachineState()
-for token in program:
-    machine.eval(token)
+def stringToProgram(code):
+    # Remove comments (anything besides 'q' and whitespace)
+    code = re.sub(r'[^q\s]', '', code)
+    return code.split()
 
+machine = MachineState()
+if len(sys.argv) > 1:
+    code = str(sys.argv)
+    program = stringToProgram(code)
+    for token in program:
+        machine.eval(token)
+else:
+    print("q-REPL. Type 'quit' to exit.")
+    while True:
+        code = input()
+        if code == 'quit':
+            print("Exiting")
+            sys.exit(0)
+        program = stringToProgram(code)
+        for token in program:
+            machine.eval(token)
