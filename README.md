@@ -34,6 +34,12 @@ Types define the datatype of the following value, values represent a value of th
 
 An action is defined by its namespace and its name. The namespace `q` is reserved for the future (e.g. user defined actions).
 
+## Special actions
+
+- Begin block: `q q q`
+- End block: `q q qq`
+- Run local block: `q qq`
+
 ## String actions
 
 - Print: `qq q`
@@ -68,3 +74,20 @@ To add two numbers the add action (`qqq q`) is used:
 
 Define +Numbers 1 and 2, add them and then print the result: `qq qq qq qqq q qqq q q qq q`
 
+## Using blocks
+
+To define a block first a block id (+Number) has to be defined and then the block is started with the begin block action (`q q q`).
+Then the block content follows (e.g. define sChar '!' in this case). The block is closed by specifying the block id again and using the end block action (`q q qq`).
+After this the block is called by specifying the block id and the using the run local block action (`q qq`).
+
+```
+Block id 1 qq qq
+start q q q q
+    sChar ! qqqqqq qq
+block id 1 qq qq
+end q q q qq
+block id 1 qq qq
+run local block q q qq
+show that sChar '!' was pushed to the stack
+print q qq q
+```
