@@ -1,8 +1,30 @@
+Add -3 + 2
 sChar \n qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 -Number -3 qqq qqqq +Number 2 qq qqq sChar = qqqqqq qqqqqqqqqqqqqqqqqqqq +Number 2 qq qqq sChar + qqqqqq qqqqqqqqqqqq -Number -3 qqq qqqq
+q qq q q qq q q qq q q qq q q qqq q q qq q q qq q
+
+Print 'Hello World'
 sChar \n qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq
 sChar ! qqqqqq qq
 lChars d l r o qqqq qqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqqqqqqqq qqqq qqqqqqqqqqqqqqq uChar W qqqqq qqqqqqqqqqqqqqqqqqqqqqq
 sChar <SPACE> qqqqqq q
 lChars o l l e qqqq qqqqqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqqqqqqqqq qqqq qqqqq uChar H qqqqq qqqqqqqq
-print q qq q print q qq q ... q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q add q qqq q print q qq q q qq q
+print q qq q print q qq q ... q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q q qq q
+
+Create a block which adds and prints numbers
+block nr1 qq qq
+start q q q q
+    add q qqq q
+    print q qq q
+block nr1 qq qq
+end q q q qq
+7 qq qqqqqqqq
+3 qq qqqq
+block nr1 qq qq
+run q q qq
+newline qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq q qq q
+-5 qqq qqqqqq
+-5 qqq qqqqqq
+block nr1 qq qq
+run q q qq
+newline qqqqqq qqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqqq q qq q
