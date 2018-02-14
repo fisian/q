@@ -21,10 +21,16 @@ if __name__ == '__main__':
     code = ("""
                 qqqq qqqqqq 5 qqqq qqq 2
                 q q method1begin
-                    qqqq qq 1 qqqq qqqqq qqq q -
+                    qqqq qq 1 qqqq qqqqq qqq q - qqqq qqqq qqq q +
                 qq q method1end qqq qqq methode1execWHILE
-                qqqq qqq qqq q print
+                qqqq qqq qqq q makestring qqqq qqqq qqq q print
             """)
+#    code = ("""
+#                qqqq qq qqqq qqqq qqq q
+#                q q
+#                    qqqq qq 1 qqqq qqqqq 4 qqq q - qqqq qqqq qqq q
+#                qq q qqq qqq m1 exec while
+#            """)
 
     program = re.sub(r"[^q ]", "", code).split()
     machine = MachineState(debug=True)
