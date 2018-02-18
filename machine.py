@@ -70,8 +70,9 @@ class MachineState:
                     self.debug("block " + str(token) + " has been gone")
                     self.push(self.declarationstack.pop(), type=self.types["Number"])
                     self.state = self.states["type"]
+                    self.blockTypeCounter -= 1
                 else:
-                    raise QLangSyntaxError("BLOCK ERROR: CLOSING BLOCK %s IS NOT THE MOST RECENTLY OPENED ONE" % str(-token))
+                    raiseQLangException(QLangSyntaxError("BLOCK ERROR: CLOSING BLOCK %s IS NOT THE MOST RECENTLY OPENED ONE" % str(-token)))
 
             else:
                 self.storeBlock(token)
@@ -88,11 +89,11 @@ class MachineState:
                     blockID = self.pop()[1]
 
                     if blockID not in self.codeblocks:
-                        raise QLangSyntaxError("BLOCK %s HAS NOT BEEN FOUND IN THE BLOCKSTORE" % str(blockID))
+                        raiseQLangException(QLangSyntaxError("BLOCK %s HAS NOT BEEN FOUND IN THE BLOCKSTORE" % str(blockID)))
                     else:
                         if self.stackdepth < 9990:
                             if token == 2 and self.peek()[0] != self.types["Number"]:
-                                raise QLangTypeException("SYNTAX ERROR: if action has not reached number on condition but rather %s" % self.peek())
+                                raiseQLangException(QLangTypeException("SYNTAX ERROR: if action has not reached number on condition but rather %s" % self.peek()))
 
                             if token == 2 and self.pop()[1] == 1:
                                 self.debug("IF CONDITION FAILED")
@@ -106,7 +107,7 @@ class MachineState:
                             if token == 3:
                                 while True:
                                     if self.peek()[0] != self.types["Number"]:
-                                        raise QLangTypeException("SYNTAX ERROR: while action has not reached number on condition but rather (%s : %s)" % (self.getKeyFromValue(self.types, self.peek()[0]), self.peek()[1]))
+                                        raiseQLangException(QLangTypeException("SYNTAX ERROR: while action has not reached number on condition but rather (%s : %s)" % (self.getKeyFromValue(self.types, self.peek()[0]), self.peek()[1])))
                                         self.state = self.states["type"]
                                         break
 
@@ -130,7 +131,7 @@ class MachineState:
 
                             self.stackdepth -= 1
                 else:
-                    raise QLangTypeException("NULL METHOD WTF")
+                    raiseQLangException(QLangTypeException("NULL METHOD WTF"))
 
                 if self.state is None:
                     self.state = self.states["type"]
@@ -170,7 +171,7 @@ class MachineState:
         elif currentType == self.types["sChar"]:
             return (self.sChars[(token - 1) % len(self.sChars)], self.types["sChar"])
 
-        raise QLangTypeException("INTERNAL TYPE VALUE ERROR: %s : %s" % (str(self.currentType), str(self.getKeyFromValue(self.types, self.currentType))))
+        raiseQLangException(QLangTypeException("INTERNAL TYPE VALUE ERROR: %s : %s" % (str(self.currentType), str(self.getKeyFromValue(self.types, self.currentType)))))
 
     def parseType(self, token):
         if token == self.types["blockbegin"] or token == self.types["blockend"]:
@@ -184,7 +185,7 @@ class MachineState:
             self.currentType = token
             return self.states["value"]
 
-        raise QLangTypeException("TYPE NOT FOUND ERROR: %s" % str(token))
+        raiseQLangException(QLangTypeException("TYPE NOT FOUND ERROR: %s" % str(token)))
 
     def getKeyFromValue(self, dict, val):
         return list(dict.keys())[list(dict.values()).index(val)]
@@ -202,7 +203,7 @@ class MachineState:
             return self.stack.pop()
 
         else:
-            raise QLangStackEmptyException("SYNTAX ERROR: no value left on stack to pop")
+            raiseQLangException(QLangStackEmptyException("SYNTAX ERROR: no value left on stack to pop"))
 
     # returns an element from stack without poping it
     def peek(self, back=0):
@@ -210,6 +211,6 @@ class MachineState:
             return self.stack[-(back + 1)]
 
         else:
-            raise QLangStackEmptyException("SYNTAX ERROR: no value left on stack to peek on")
+            raiseQLangException(QLangStackEmptyException("SYNTAX ERROR: no value left on stack to peek on"))
 
 
