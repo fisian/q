@@ -1,8 +1,7 @@
-import actions
-import definitions
-from exceptions import *
-from code import Codeline
-from code import Codeblock
+import qlang_actions as actions
+import qlang_definitions as definitions
+from qlang_exceptions import QLangSyntaxError, QLangTypeException, raiseQLangException
+from qlang_code import QLangCodeblock
 import types
 
 class QLangEvaluator:
@@ -13,6 +12,7 @@ class QLangEvaluator:
         self.state = definitions.states["type"]
         # custom code blocks defined as actions
         self.codeblocks = {}
+        self.codelines = []
         self.declarationstack = []
 
     # prints a debug message when debug is enabled
@@ -21,25 +21,30 @@ class QLangEvaluator:
             print(msg)
 
     def evalLine(self, line):
+        appendLine = True
         # evaluate type
-        type, self.state = self.parseType(line[0])
-        line.typeDescription = self.getKeyFromValue(definitions.types, type)
+        self.type, self.state = self.parseType(line[0])
+        line.typeDescription = self.getKeyFromValue(definitions.types, self.type)
         # evaluate value
+        if len(self.declarationstack) > 0 and self.state is not definitions.states["block"]:
+            self.getCodeblock(self.declarationstack)[0].append(line)
+            appendLine = False
+        
         if self.state is definitions.states["block"]:
-            if type == definitions.types["blockend"]:
+            if self.type == definitions.types["blockend"]:
                 if self.declarationstack[-1] == -line[1]:
                     blocknr = self.declarationstack.pop()
                     blocknrType = definitions.types["Number"]
                     def blockend(self, state):
-                        state.push(blocknr, type=blocknrType)
+                        state.push(blocknr, blocknrType)
                     
                     line.execute = types.MethodType(blockend, line)
                     line.valueDescription = blocknr
                 else:
                     raiseQLangException(QLangSyntaxError("BLOCK ERROR: CLOSING BLOCK %s IS NOT THE MOST RECENTLY OPENED ONE" % str(-line[1])))
                     
-            elif type == definitions.types["blockbegin"]:
-                self.getCodeblock(self.declarationstack)[-line[1]] = { 0: Codeblock() }
+            elif self.type == definitions.types["blockbegin"]:
+                self.getCodeblock(self.declarationstack)[-line[1]] = { 0: QLangCodeblock() }
                 self.declarationstack.append(-line[1])
                 declarationstack = self.declarationstack[:]
                 def blockbegin(self, state):
@@ -49,7 +54,7 @@ class QLangEvaluator:
                 line.valueDescription = -line[1]
                 
             else:
-                self.getCodeblock(self.declarationstack)[0].append(line)
+                raise Exception("State is block but type is unknown!")
 
         elif self.state is definitions.states["action"]:
             def action(self, state):
@@ -132,7 +137,7 @@ class QLangEvaluator:
                                     if whileCondition[1] == 0:
                                         break
                                     
-                                    for action in state.codeblocks[actionNr[1]]:
+                                    for action in state.codeblocks[actionNr[1]].lines:
                                         action.execute(state)
                         
                         else:
@@ -146,7 +151,7 @@ class QLangEvaluator:
                 raise Exception("Invalid")
 
         elif self.state is definitions.states["value"]:
-            stackValue, stackType = self.parseValue(line[1], type)
+            stackValue, stackType = self.parseValue(line[1], self.type)
             def value(self, state):
                 state.push(stackValue, stackType)
                 
@@ -155,27 +160,30 @@ class QLangEvaluator:
 
         else:
             print("INTERNAL STATE ERROR: " + str(self.state))
+    
+        if appendLine:
+            self.codelines.append(line)
 
 
 
     # parse the given value in relation to the current type information
-    def parseValue(self, token, type):
-        if type == definitions.types["+Number"]:
+    def parseValue(self, token, qType):
+        if qType == definitions.types["+Number"]:
             return token - 1, definitions.types["Number"]
 
-        elif type == definitions.types["-Number"]:
+        elif qType == definitions.types["-Number"]:
             return -(token - 1), definitions.types["Number"]
 
-        elif type == definitions.types["lChar"]:
+        elif qType == definitions.types["lChar"]:
             return chr(97 + (token - 1) % 26), definitions.types["lChar"]
 
-        elif type == definitions.types["uChar"]:
+        elif qType == definitions.types["uChar"]:
             return chr(65 + (token - 1) % 26), definitions.types["uChar"]
 
-        elif type == definitions.types["sChar"]:
+        elif qType == definitions.types["sChar"]:
             return self.sChars[(token - 1) % len(self.sChars)], definitions.types["sChar"]
 
-        raiseQLangException(QLangTypeException("INTERNAL TYPE VALUE ERROR: %s : %s" % (str(type), str(self.getKeyFromValue(definitions.types, type)))))
+        raiseQLangException(QLangTypeException("INTERNAL TYPE VALUE ERROR: %s : %s" % (str(qType), str(self.getKeyFromValue(definitions.types, qType)))))
 
     def parseType(self, token):
         if token == definitions.types["blockbegin"] or token == definitions.types["blockend"]:
@@ -189,8 +197,8 @@ class QLangEvaluator:
 
         raiseQLangException(QLangTypeException("TYPE NOT FOUND ERROR: %s" % str(token)))
 
-    def getKeyFromValue(self, dict, val):
-        return list(dict.keys())[list(dict.values()).index(val)]
+    def getKeyFromValue(self, dictionary, val):
+        return list(dictionary.keys())[list(dictionary.values()).index(val)]
 
     def getCodeblock(self, declarationstack):
         codeblock = self.codeblocks

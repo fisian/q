@@ -1,6 +1,4 @@
-import actions
-import definitions
-from exceptions import *
+from qlang_exceptions import QLangStackEmptyException, raiseQLangException
 
 class QLangState:
     def __init__(self, program, debug=False):
@@ -13,8 +11,8 @@ class QLangState:
         self.stack = []
 
     # helper method for eval
-    def push(self, param, type):
-        self.stack.append((type, param))
+    def push(self, param, qType):
+        self.stack.append((qType, param))
 
     # pops off the top stack element and returns it
     def pop(self):
@@ -31,8 +29,8 @@ class QLangState:
 
         else:
             raiseQLangException(QLangStackEmptyException("SYNTAX ERROR: no value left on stack to peek on"))
-    def getKeyFromValue(self, dict, val):
-        return list(dict.keys())[list(dict.values()).index(val)]
+    def getKeyFromValue(self, dictionary, val):
+        return list(dictionary.keys())[list(dictionary.values()).index(val)]
     
     def getCodeblock(self, declarationstack):
         codeblock = self.program.codeblocks

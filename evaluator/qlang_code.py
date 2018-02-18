@@ -1,4 +1,4 @@
-class Codeline:
+class QLangCodeline:
     def __init__(self):
         self.type = None
         self.value = None
@@ -30,7 +30,7 @@ class Codeline:
     def __repr__(self):
         return self.__str__()
     
-class Codeblock:
+class QLangCodeblock:
     def __init__(self):
         self.lines = []
     
@@ -40,9 +40,15 @@ class Codeblock:
     def execute(self, state):
         for line in self.lines:
             line.execute(state)
+    
+    def __str__(self):
+        return str(self.lines)
+    
+    def __repr__(self):
+        return self.__str__()
 
-class Program:
+class QLangProgram:
     def __init__(self, lines, blocks):
-        self.lines = lines
+        self.codelines = lines
         self.codeblocks = blocks
     

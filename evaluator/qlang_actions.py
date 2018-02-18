@@ -1,5 +1,5 @@
-from exceptions import *
-import definitions
+from qlang_exceptions import QLangArgumentException, QLangIllegalCastException, QLangStackEmptyException, QLangTypeException, raiseQLangException
+import qlang_definitions as definitions
 
 def pop(state):
     state.pop()
@@ -33,13 +33,13 @@ def add(state):
     val2 = state.pop()
     val1 = state.pop()
     if val1[0] == definitions.types["Number"] and val2[0] == definitions.types["Number"]:
-        state.push(val1[1] + val2[1], type=definitions.types["Number"])
+        state.push(val1[1] + val2[1], definitions.types["Number"])
     elif val1[0] == definitions.types["lChar"] and val2[0] == definitions.types["Number"]:
-        state.push(chr(97 + (ord(val1[1]) + val2[1] - 97) % 26), type=definitions.types["lChar"])
+        state.push(chr(97 + (ord(val1[1]) + val2[1] - 97) % 26), definitions.types["lChar"])
     elif val1[0] == definitions.types["uChar"] and val2[0] == definitions.types["Number"]:
-        state.push(chr(65 + (ord(val1[1]) + val2[1] - 65) % 26), type=definitions.types["uChar"])
+        state.push(chr(65 + (ord(val1[1]) + val2[1] - 65) % 26), definitions.types["uChar"])
     elif val1[0] == definitions.types["sChar"] and val2[0] == definitions.types["Number"]:
-        state.push(definitions.sChars[(definitions.sChars.index(val1[1]) + val2[1] - 1) % len(definitions.sChars)], type=definitions.types["sChar"])
+        state.push(definitions.sChars[(definitions.sChars.index(val1[1]) + val2[1] - 1) % len(definitions.sChars)], definitions.types["sChar"])
     elif val1[0] == definitions.types["STRING"] and val2[0] in [definitions.types["lChar"], definitions.types["uChar"], definitions.types["sChar"], definitions.types["Number"], definitions.types["String"]]:
         state.push(val1[1] + val2[1], definitions.types["String"])
     else:
@@ -49,13 +49,13 @@ def subtract(state):
     val2 = state.pop()
     val1 = state.pop()
     if val1[0] == definitions.types["Number"] and val2[0] == definitions.types["Number"]:
-        state.push(val1[1] - val2[1], type=definitions.types["Number"])
+        state.push(val1[1] - val2[1], definitions.types["Number"])
     elif val1[0] == definitions.types["lChar"] and val2[0] == definitions.types["Number"]:
-        state.push(chr(97 + (ord(val1[1]) - val2[1] - 97) % 26), type=definitions.types["lChar"])
+        state.push(chr(97 + (ord(val1[1]) - val2[1] - 97) % 26), definitions.types["lChar"])
     elif val1[0] == definitions.types["uChar"] and val2[0] == definitions.types["Number"]:
-        state.push(chr(65 + (ord(val1[1]) - val2[1] - 65) % 26), type=definitions.types["uChar"])
+        state.push(chr(65 + (ord(val1[1]) - val2[1] - 65) % 26), definitions.types["uChar"])
     elif val1[0] == definitions.types["sChar"] and val2[0] == definitions.types["Number"]:
-        state.push(definitions.sChars[(definitions.sChars.index(val1[1]) - val2[1] - 1) % len(definitions.sChars)], type=definitions.types["sChar"])
+        state.push(definitions.sChars[(definitions.sChars.index(val1[1]) - val2[1] - 1) % len(definitions.sChars)], definitions.types["sChar"])
     else:
         raiseQLangException(QLangTypeException("SYNTAX ERROR: subtraction of %s and %s not allowed" % (state.getKeyFromValue(definitions.types, val1[0]), state.getKeyFromValue(definitions.types, val2[0]))))
 
@@ -63,7 +63,7 @@ def multiply(state):
     val1 = state.pop()
     val2 = state.pop()
     if val1[0] == definitions.types["Number"] and val2[0] == definitions.types["Number"]:
-        state.push(val1[1] * val2[1], type=definitions.types["Number"])
+        state.push(val1[1] * val2[1], definitions.types["Number"])
     elif val1[0] in [definitions.types["lChar"], definitions.types["uChar"], definitions.types["sChar"], definitions.types["String"]] and val2[0] == definitions.types["Number"]:
         state.push(("" + val1[1]) * val2[1], definitions.types["String"])
     else:
@@ -73,17 +73,23 @@ def divide(state):
     val1 = state.pop()
     val2 = state.pop()
     if val1[0] == definitions.types["Number"] and val2[0] == definitions.types["Number"]:
-        state.push(val1[1] / val2[1], type=definitions.types["Number"])
+        state.push(val1[1] / val2[1], definitions.types["Number"])
     else:
         raiseQLangException(QLangTypeException("SYNTAX ERROR: division of %s and %s not allowed" % (state.getKeyFromValue(definitions.types, val1[0]), state.getKeyFromValue(definitions.types, val2[0]))))
 
 def duplicate(state):
-    state.push(state.stack[-1][1], type=state.stack[-1][0])
+    if len(state.stack) > 0:
+        state.push(state.stack[-1][1], state.stack[-1][0])
+    else:
+        raiseQLangException(QLangStackEmptyException("Cannot duplicate non existing element"))
 
 def xDuplicate(state):
     index = state.pop()
     if index[0] == definitions.types["Number"]:
-        state.push(state.stack[-index[1]][1], type=state.stack[-index[1]][0])
+        if 0 < index[1] < len(state.stack):
+            state.push(state.stack[-index[1]][1], state.stack[-index[1]][0])
+        else:
+            raiseQLangException(QLangArgumentException("SYNTAX ERROR: index of xDuplicate is not in range"))
     else:
         raiseQLangException(QLangTypeException("SYNTAX ERROR: index for xDuplicate has to be number"))
 
@@ -91,7 +97,7 @@ def xPush(state):
     index = state.pop()
     if index[0] == definitions.types["Number"]:
         if 0 < index[1] < len(state.stack):
-            state.push(state.stack[-index[1]][1], type=state.stack[-index[1]][0])
+            state.push(state.stack[-index[1]][1], state.stack[-index[1]][0])
         else:
             raiseQLangException(QLangArgumentException("SYNTAX ERROR: index of xPush is not in range"))
     else:
@@ -100,16 +106,16 @@ def xPush(state):
 def swap(state):
     val1 = state.pop()
     val2 = state.pop()
-    state.push(val1[1], type=val1[0])
-    state.push(val2[1], type=val2[0])
+    state.push(val1[1], val1[0])
+    state.push(val2[1], val2[0])
 
 def over(state):
     val1 = state.pop()
     val2 = state.pop()
     val3 = state.pop()
-    state.push(val1[1], type=val1[0])
-    state.push(val2[1], type=val2[0])
-    state.push(val3[1], type=val3[0])
+    state.push(val1[1], val1[0])
+    state.push(val2[1], val2[0])
+    state.push(val3[1], val3[0])
 
 actions = {
         1: pop,

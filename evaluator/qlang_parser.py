@@ -1,4 +1,5 @@
-from code import Codeline
+from qlang_exceptions import QLangError, raiseQLangException
+from qlang_code import QLangCodeline
 
 class QLangParser:
     def __init__(self):
@@ -11,7 +12,7 @@ class QLangParser:
             token = len(token)
             tokenPosition = self.tokenCounter % 2
             if tokenPosition == 0:
-                self.currentCodeline = Codeline()
+                self.currentCodeline = QLangCodeline()
             
             self.currentCodeline[tokenPosition] = token
             
