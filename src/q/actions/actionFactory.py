@@ -73,8 +73,7 @@ def actionInner(state, actionNr):
         if actionNr[1] not in state.codeblocks:
             raiseQLangException(QLangSyntaxError("Block %s has not been defined" % str(actionNr[1])))
         else:
-            for action in state.codeblocks[actionNr[1]].lines:
-                action.execute(state)
+            state.codeblocks[actionNr[1]].run(state)
     
     else:
         raiseQLangException(QLangTypeException("Action identified by NUMBER 0 does not exist"))

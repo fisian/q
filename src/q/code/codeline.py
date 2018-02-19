@@ -8,6 +8,9 @@ class QLangCodeline:
     def execute(self, state):
         raise Exception("Line was not evaluated!")
     
+    def run(self, state):
+        self.execute(state)
+    
     def __getitem__(self, key):
         if key == 0:
             return self.type

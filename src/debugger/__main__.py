@@ -3,13 +3,13 @@
 # The rest are belong to Neverbolt
 # Although some are belong to Goebel and Anders
 
-from .evaluator import QLangEvaluator
-from .parser import QLangParser
-from .state import QLangState
-from .code import QLangCodeline, QLangProgram
+from q.evaluator import QLangEvaluator
+from q.parser import QLangParser
+from q.state import QLangState
+from q.code import QLangCodeline, QLangCodeblock, QLangProgram
 import re
-import types
 import sys
+#from .debugger import QLangDebugger
 
 if __name__ == '__main__':
     code = ("""
@@ -23,22 +23,27 @@ if __name__ == '__main__':
                     qqqq qqqqqqqqq qqq q duplicate
                 qq qq qqq qqq exec while
             """)
-    code = ("""
-            qqqq qqqqq
-            q q
-                q qq
-                    qqqq qqqq qqq q
-                qq qq
-                qqq q
-            qq q
-            qqq q
-            """)
     
     if len(sys.argv) > 1:
         with open(sys.argv[1], 'r') as codefile:
             code = codefile.read()
     
     program = re.sub(r"[^q\s]", "", code).split()
+    # Inject debugging into code
+    #debugger = QLangDebugger
+    runLine = QLangCodeline.run
+    runBlock = QLangCodeblock.run
+    def debugExecLine(self, state):
+        print("Executing %s" % self)
+        
+        runLine(self, state)
+    
+    def debugExecBlock(self, state):
+        print("Block %s" % self)
+        runBlock(self, state)
+    
+    QLangCodeline.run = debugExecLine
+    QLangCodeblock.run = debugExecBlock
     # Parse code
     parser = QLangParser()
     for token in program:
@@ -48,12 +53,6 @@ if __name__ == '__main__':
         evaluator.evalLine(line)
     qLangProgram = QLangProgram(evaluator.codelines, evaluator.codeblocks)
     state = QLangState(qLangProgram)
-    # Inject python code into QLangProgram
-#    pLine = QLangCodeline()
-#    def pLineExec(self, state):
-#        print(state.stack)
-#    pLine.execute = types.MethodType(pLineExec, pLine)
-#    state.program.codelines.append(pLine)
     # Run QLangProgram
     for line in state.program.codelines:
         line.run(state)

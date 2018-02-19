@@ -5,9 +5,9 @@ class QLangCodeblock:
     def append(self, line):
         self.lines.append(line)
     
-    def execute(self, state):
+    def run(self, state):
         for line in self.lines:
-            line.execute(state)
+            line.run(state)
     
     def __str__(self):
         return str(self.lines)
