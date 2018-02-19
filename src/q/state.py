@@ -1,4 +1,4 @@
-from .exceptions import QLangStackEmptyException, raiseQLangException
+from .util.exceptions import QLangStackEmptyException, raiseQLangException
 
 class QLangState:
     def __init__(self, program, debug=False):

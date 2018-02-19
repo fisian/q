@@ -1,5 +1,5 @@
-from .exceptions import QLangArgumentException, QLangIllegalCastException, QLangStackEmptyException, QLangTypeException, raiseQLangException
-from . import definitions as definitions
+from ..util.exceptions import QLangArgumentException, QLangIllegalCastException, QLangStackEmptyException, QLangTypeException, raiseQLangException
+from ..util import definitions
 
 def pop(state):
     state.pop()
@@ -116,16 +116,3 @@ def over(state):
     state.push(val1[1], val1[0])
     state.push(val2[1], val2[0])
     state.push(val3[1], val3[0])
-
-actions = {
-        1: pop,
-        2: makeString,
-        3: printNextStackValue,
-        4: add,
-        5: subtract,
-        6: multiply,
-        7: divide,
-        8: duplicate,
-        9: swap,
-        10: over
-    }

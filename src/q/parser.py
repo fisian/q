@@ -1,5 +1,5 @@
-from .exceptions import QLangError, raiseQLangException
-from .code.codeline import QLangCodeline
+from .util.exceptions import QLangError, raiseQLangException
+from .code import QLangCodeline
 
 class QLangParser:
     def __init__(self):

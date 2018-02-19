@@ -3,7 +3,7 @@ states = {"error":-1, "action": 0, "type": 1, "value": 2, "block": 3}
 # action resolving
 
 actionModifiers = {
-        "none": 1,
+        "normal": 1,
         "if": 2,
         "while": 3
     }

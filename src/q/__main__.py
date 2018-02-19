@@ -9,6 +9,7 @@ from .state import QLangState
 from .code import QLangCodeline, QLangProgram
 import re
 import types
+import sys
 
 if __name__ == '__main__':
     code = ("""
@@ -22,8 +23,22 @@ if __name__ == '__main__':
                     qqqq qqqqqqqqq qqq q duplicate
                 qq qq qqq qqq exec while
             """)
+    code = ("""
+            qqqq qqqqq
+            q q
+                q qq
+                    qqqq qqqq qqq q
+                qq qq
+                qqq q
+            qq q
+            qqq q
+            """)
     
-    program = re.sub(r"[^q ]", "", code).split()
+    if len(sys.argv) > 1:
+        with open(sys.argv[1], 'r') as codefile:
+            code = codefile.read()
+    
+    program = re.sub(r"[^q\s]", "", code).split()
     # Parse code
     parser = QLangParser()
     for token in program:
@@ -34,11 +49,11 @@ if __name__ == '__main__':
     qLangProgram = QLangProgram(evaluator.codelines, evaluator.codeblocks)
     state = QLangState(qLangProgram)
     # Inject python code into QLangProgram
-    pLine = QLangCodeline()
-    def pLineExec(self, state):
-        print(state.stack)
-    pLine.execute = types.MethodType(pLineExec, pLine)
-    state.program.codelines.append(pLine)
+#    pLine = QLangCodeline()
+#    def pLineExec(self, state):
+#        print(state.stack)
+#    pLine.execute = types.MethodType(pLineExec, pLine)
+#    state.program.codelines.append(pLine)
     # Run QLangProgram
     for line in state.program.codelines:
         line.execute(state)
