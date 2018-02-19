@@ -93,7 +93,7 @@ class QLangEvaluator:
             return chr(65 + (token - 1) % 26), definitions.types["uChar"]
 
         elif qType == definitions.types["sChar"]:
-            return self.sChars[(token - 1) % len(self.sChars)], definitions.types["sChar"]
+            return definitions.sChars[(token - 1) % len(definitions.sChars)], definitions.types["sChar"]
 
         raiseQLangException(QLangTypeException("INTERNAL TYPE VALUE ERROR: %s : %s" % (str(qType), str(self.getKeyFromValue(definitions.types, qType)))))
 
