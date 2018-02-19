@@ -1,7 +1,7 @@
-import qlang_actions as actions
-import qlang_definitions as definitions
-from qlang_exceptions import QLangSyntaxError, QLangTypeException, raiseQLangException
-from qlang_code import QLangCodeblock
+from . import actions
+from . import definitions
+from .exceptions import QLangSyntaxError, QLangTypeException, raiseQLangException
+from .code import QLangCodeblock
 import types
 
 class QLangEvaluator:

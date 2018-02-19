@@ -1,5 +1,5 @@
-from qlang_exceptions import QLangArgumentException, QLangIllegalCastException, QLangStackEmptyException, QLangTypeException, raiseQLangException
-import qlang_definitions as definitions
+from .exceptions import QLangArgumentException, QLangIllegalCastException, QLangStackEmptyException, QLangTypeException, raiseQLangException
+from . import definitions as definitions
 
 def pop(state):
     state.pop()
