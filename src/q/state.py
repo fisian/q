@@ -31,9 +31,3 @@ class QLangState:
             raiseQLangException(QLangStackEmptyException("SYNTAX ERROR: no value left on stack to peek on"))
     def getKeyFromValue(self, dictionary, val):
         return list(dictionary.keys())[list(dictionary.values()).index(val)]
-    
-    def getCodeblock(self, declarationstack):
-        codeblock = self.program.codeblocks
-        for index in declarationstack:
-            codeblock = codeblock[index]
-        return codeblock

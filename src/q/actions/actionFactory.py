@@ -11,11 +11,9 @@ def buildBlockend(line, blocknr):
     
     return types.MethodType(blockend, line)
 
-def buildBlockbegin(line, declarationstack):
-    # shallow copy declaration stack list
-    qualifiedBlockindex = declarationstack[:]
+def buildBlockbegin(line, blockNr):
     def blockbegin(self, state):
-        state.codeblocks[-line[1]] = state.getCodeblock(qualifiedBlockindex)[0]
+        state.codeblocks[-line[1]] = state.program.codeblocks[blockNr]
     
     return types.MethodType(blockbegin, line)
 

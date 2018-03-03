@@ -26,7 +26,7 @@ class QLangEvaluator:
         line.typeDescription = self.getKeyFromValue(definitions.types, self.type)
         # evaluate value
         if len(self.declarationstack) > 0 and self.state is not definitions.states["block"]:
-            self.getCodeblock(self.declarationstack)[0].append(line)
+            self.codeblocks[self.declarationstack[-1]].append(line)
             appendLine = False
         
         if self.state is definitions.states["block"]:
@@ -34,7 +34,7 @@ class QLangEvaluator:
                 if self.declarationstack[-1] == -line[1]:
                     blocknr = self.declarationstack.pop()
                     if len(self.declarationstack) > 0:
-                        self.getCodeblock(self.declarationstack)[0].append(line)
+                        self.codeblocks[self.declarationstack[-1]].append(line)
                         appendLine = False
                     
                     line.execute = actionFactory.buildBlockend(line, blocknr)
@@ -43,13 +43,16 @@ class QLangEvaluator:
                     raiseQLangException(QLangSyntaxError("BLOCK ERROR: CLOSING BLOCK %s IS NOT THE MOST RECENTLY OPENED ONE" % str(-line[1])))
                     
             elif self.type == definitions.types["blockbegin"]:
+                if (-line[1]) in self.codeblocks:
+                    raiseQLangException(QLangSyntaxError("BLOCK REDEFINITION ERROR: Redefining block %d not allowed" % (-line[1])))
+                
                 if len(self.declarationstack) > 0:
-                    self.getCodeblock(self.declarationstack)[0].append(line)
+                    self.codeblocks[self.declarationstack[-1]].append(line)
                     appendLine = False
                 
-                self.getCodeblock(self.declarationstack)[-line[1]] = { 0: QLangCodeblock() }
+                self.codeblocks[-line[1]] = QLangCodeblock()
                 self.declarationstack.append(-line[1])
-                line.execute = actionFactory.buildBlockbegin(line, self.declarationstack)
+                line.execute = actionFactory.buildBlockbegin(line, -line[1])
                 line.valueDescription = -line[1]
             
             else:
@@ -111,9 +114,3 @@ class QLangEvaluator:
 
     def getKeyFromValue(self, dictionary, val):
         return list(dictionary.keys())[list(dictionary.values()).index(val)]
-
-    def getCodeblock(self, declarationstack):
-        codeblock = self.codeblocks
-        for index in declarationstack:
-            codeblock = codeblock[index]
-        return codeblock
